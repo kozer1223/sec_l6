@@ -4,6 +4,7 @@
 
 using namespace std;
 
+/*
 mpz_class random_prime(int bits){
 	mpz_class min = 1;
 	mpz_ui_pow_ui(min.get_mpz_t(), 2, bits-1);
@@ -20,6 +21,22 @@ mpz_class random_prime(int bits){
 	r.seed(time(NULL));
 	while(true){
 		mpz_class p = min + 2 * r.get_z_range(difference);
+		if (mpz_probab_prime_p(p.get_mpz_t(), 35)){
+			return p;
+		}
+	}
+}
+*/
+
+mpz_class random_prime(int bits){
+	mpz_class min = 1;
+	mpz_ui_pow_ui(min.get_mpz_t(), 2, bits-1);
+
+	gmp_randclass r(gmp_randinit_mt);
+
+	r.seed(time(NULL));
+	while(true){
+		mpz_class p = min + (r.get_z_bits(bits-2) << 1) + 1;
 		if (mpz_probab_prime_p(p.get_mpz_t(), 35)){
 			return p;
 		}
