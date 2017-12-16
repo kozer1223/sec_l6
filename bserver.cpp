@@ -49,7 +49,7 @@ string sha256(const string str)
     return ss.str();
 }
 
-void server(mpz_class n, mpz_class d) {
+void server(mpz_class n, mpz_class d, mpz_class e) {
     int server_fd, new_socket, valread;
     struct sockaddr_in address;
     int opt = 1;
@@ -102,7 +102,20 @@ void server(mpz_class n, mpz_class d) {
     			m += rd;
     			break;
     		}
-    		mpz_powm(m.get_mpz_t(), m.get_mpz_t(), d.get_mpz_t(), n.get_mpz_t());
+
+  			gmp_randclass rng(gmp_randinit_mt);
+			rng.seed(time(NULL));
+			mpz_class r = 0;
+			do{
+				r = rng.get_z_range(n);
+			} while (gcd(r, n) != 1);
+
+			mpz_class re;
+    		mpz_powm_sec(re.get_mpz_t(), r.get_mpz_t(), e.get_mpz_t(), n.get_mpz_t());
+    		m *= re;
+    		mpz_powm_sec(m.get_mpz_t(), m.get_mpz_t(), d.get_mpz_t(), n.get_mpz_t());
+    		mpz_invert(r.get_mpz_t(), r.get_mpz_t(), n.get_mpz_t());
+    		m *= r;
 
     		//cout << m << endl;
 
@@ -174,7 +187,7 @@ int main(int argc, char* argv[]) {
 			exit(1);
 		}
 
-		mpz_class n, d;
+		mpz_class n, d, e;
 		ifstream privkey_file("privkey");
 		if (!privkey_file){
 			cout << "Unable to open privkey file" << endl;
@@ -185,10 +198,20 @@ int main(int argc, char* argv[]) {
 		privkey_file >> d;
 		privkey_file.close();
 
+		ifstream pubkey_file("pubkey");
+		if (!pubkey_file){
+			cout << "Unable to open pubkey file" << endl;
+			exit(1);
+		}
+
+		pubkey_file >> n;
+		pubkey_file >> e;
+		pubkey_file.close();
+
 		//cout << n << endl;
 		//cout << d << endl;
 
-		server(n, d);
+		server(n, d, e);
 	} else {
 		std::cout << "Usage: bserver setup <keysize> or bserver sign" << endl;
 		exit(0);
