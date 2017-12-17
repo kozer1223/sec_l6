@@ -72,7 +72,7 @@ int main(int argc, char* argv[]) {
 	m = str_to_int(message);
 
 	mpz_powm(decoded_s.get_mpz_t(), s.get_mpz_t(), e.get_mpz_t(), n.get_mpz_t());
-	if (decoded_s == m) {
+	if (decoded_s == m % n) {
 		cout << "Message verified!" << endl;
 	} else {
 		cout << "Wrong signature!" << endl;

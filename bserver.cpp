@@ -49,6 +49,19 @@ string sha256(const string str)
     return ss.str();
 }
 
+// calculates x^n mod m in constant time
+mpz_class powmod_consttime(mpz_class x, mpz_class n, mpz_class m){
+	mpz_class res = 1;
+	while (n > 0){
+		int s = (n % 2 == 1);
+		res = (res * x * s + res * (1-s)) % m;
+		x = (x * x) % m;
+		n = n / 2;
+	}
+	return res;
+}
+
+
 void server(mpz_class n, mpz_class d, mpz_class e) {
     int server_fd, new_socket, valread;
     struct sockaddr_in address;
@@ -107,15 +120,19 @@ void server(mpz_class n, mpz_class d, mpz_class e) {
 			rng.seed(time(NULL));
 			mpz_class r = 0;
 			do{
-				r = rng.get_z_range(n);
+				r = rng.get_z_range(n-2) + 1;
 			} while (gcd(r, n) != 1);
 
 			mpz_class re;
-    		mpz_powm_sec(re.get_mpz_t(), r.get_mpz_t(), e.get_mpz_t(), n.get_mpz_t());
-    		m *= re;
-    		mpz_powm_sec(m.get_mpz_t(), m.get_mpz_t(), d.get_mpz_t(), n.get_mpz_t());
+    		//mpz_powm_sec(re.get_mpz_t(), r.get_mpz_t(), e.get_mpz_t(), n.get_mpz_t());
+    		re = powmod_consttime(r, e, n);
+    		//m *= re;
+    		m = (m * re) % n;
+    		//mpz_powm_sec(m.get_mpz_t(), m.get_mpz_t(), d.get_mpz_t(), n.get_mpz_t());
+    		m = powmod_consttime(m, d, n);
     		mpz_invert(r.get_mpz_t(), r.get_mpz_t(), n.get_mpz_t());
-    		m *= r;
+    		m = (m * r) % n;
+    		//m = m % n;
 
     		//cout << m << endl;
 

@@ -94,7 +94,7 @@ int main(int argc, char* argv[]) {
 	rng.seed(time(NULL));
 	mpz_class r = 0;
 	do{
-		r = rng.get_z_range(n);
+		r = rng.get_z_range(n-2) + 1;
 	} while (gcd(r, n) != 1);
 
 	mpz_class re;
@@ -118,7 +118,7 @@ int main(int argc, char* argv[]) {
     }
 
     mpz_invert(r.get_mpz_t(), r.get_mpz_t(), n.get_mpz_t());
-    mprim *= r;
+    mprim = (mprim * r) % n;
 
     cout << mprim <<endl;
 
